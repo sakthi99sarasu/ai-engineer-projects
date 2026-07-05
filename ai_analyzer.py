@@ -15,5 +15,11 @@ def resume_ai_analyzer(user_data):
         "type": "text",
         "mime_type": "application/json"
     })
-    result = json.loads(interaction.output_text)
-    return result
+    try:
+    # Attempt to parse the variable
+        result = json.loads(interaction.output_text)
+        return result
+    
+    except (ValueError, TypeError, json.JSONDecodeError):
+        print("Not a valid JSON string.")
+       

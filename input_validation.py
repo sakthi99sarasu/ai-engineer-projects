@@ -1,25 +1,45 @@
-
 from pypdf import PdfReader
-import streamlit as st
+from typing import Union, Tuple
 
-def validate_pdf(resume_data):
-    if resume_data is not None or resume_data: 
-        if resume_data.type != "application/pdf" or resume_data.size > 200 * 1024:
-            st.write("Please upload valid resume to proceed.")
-        extract_data = PdfReader(resume_data)
+MAX_FILE_SIZE_BYTES = 200 * 1024  # 200KB
+
+def validate_pdf(resume_file) -> Tuple[bool, Union[str, None]]:
+    """
+    Validates the uploaded file and extracts its text.
+    Returns: (is_valid, text_content_or_none)
+    """
+    if resume_file is None:
+        return False, ("❌ Please upload your resume to proceed.")
+        
+    if resume_file.type != "application/pdf":
+        return False, ("❌ Please upload a valid PDF resume to proceed.")  
+        
+    if resume_file.size > MAX_FILE_SIZE_BYTES:
+        return False, ("❌ Please upload a resume file smaller than 200KB to proceed.")
+
+    try:
+        reader = PdfReader(resume_file)
         raw_text = ""
-        for page in extract_data.pages:
-            if page.extract_text():
-                raw_text += page.extract_text() + "\n"
-        st.write("Resume uploaded successfully!")       
-    else:
-        st.write("Please upload your resume to proceed.")
-        raw_text = None
-    return raw_text
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                raw_text += text + "\n"
+        
+        if not raw_text.strip():
 
-def validate_job_description(job_skills):
-    if job_skills.strip() is None or not job_skills:
-        st.write("Please enter the required skills to proceed.")
-    else:
-        job_skills = job_skills
-    return job_skills
+            return False, ("❌ The PDF appears to be empty or unreadable.")
+            
+        return True, raw_text      
+    except Exception as e:
+        return False, ("❌ Failed to parse PDF: {str(e)}")
+
+
+def validate_job_description(job_skills: str) -> Tuple[bool, Union[str, None]]:
+    """
+    Validates the job skills input string.
+    Returns: (is_valid, cleaned_skills_string_or_none)
+    """
+    if not job_skills or not job_skills.strip():
+        return False, ("❌ Please enter the required skills to proceed.")
+        
+    return True, job_skills.strip()

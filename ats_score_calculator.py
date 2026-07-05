@@ -9,7 +9,6 @@ def calculate_ats_score(user_data, ai_result):
             matching_skills.append(skill)
 
     score =len(matching_skills)/len(user_data['job_skills']) * 100
-    print(matching_skills)
     ats_data = {"ats_score":round(score, 2), "candidate_skills": candidate_skills, "missed_skills": missed_skills, "recommendations": ai_result['recommendations'] }
     return ats_data
     
